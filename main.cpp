@@ -5,7 +5,12 @@
 using namespace std;
 
 vector<char> abecedario={'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'};
-typedef int sizess ;
+
+class punto{
+    public:
+    int x,y;
+    punto(int x1,int y1):x(x1),y(y1){};
+};
 int get_letra(char letra){
     for (int i=0;i<abecedario.size();i++){
         if (abecedario[i]==letra){
@@ -17,7 +22,6 @@ int get_letra(char letra){
 string get_palabra(string palabra,int &start, int end){
     int i=start;
     string temporal="";
-
     while(i<end && !isdigit(palabra[i])){
         temporal+=palabra[i];
         i++;
@@ -57,15 +61,11 @@ int get_numero(string palabra,int &start, int end){
     return int_temporal-1;
 }
 
-bool check_if_missing(string **matrix,int rows, int cols){
-    for (int i=0;i<rows;i++){
-        for (int j=0;j<cols;j++){
-            if (matrix[i][j]!="0"){
-                return true;
-            }
-        }
+bool check_if_missing(vector<punto> matrix){
+    if(matrix.empty()){
+        return false;
     }
-    return false;
+    return true;
 }
 
 
@@ -73,7 +73,7 @@ int main(){
     int spreadsheets,Columns,Rows;
     cin>>spreadsheets;
     string palabra;
-    
+    vector<punto> missing_boxes;
     for (int i=0;i<spreadsheets;i++){
         cin>>Columns>>Rows;
         int **matrix=new int*[Rows];
@@ -94,30 +94,17 @@ int main(){
                 }else{
                     matrix_string[j][k]=palabra;
                     matrix[j][k]=0;
+                    missing_boxes.push_back(punto(j,k));
                 }
-                /*if (isdigit(palabra[0]) || palabra[0]==45){
-                    matrix[j][k]=stoi(palabra);
-                }else{
-                    int contador=0,posicion=0,x,y;
-                    string temporal;
-                    while(get_primeracosa(palabra[posicion])){
-                        posicion+=1;
-                        temporal=get_palabra(palabra,posicion,palabra.size());
-                        x=get_valor_de_palabra(temporal,temporal.size());
-                        y=get_numero(palabra,posicion,palabra.size());
-                        cout<<" X ES "<<x<<"   Y ES "<<y;
-                        contador+=matrix[x][y];
-                        cout<<"   "<<matrix[x][y]<<endl;
-                    }
-                    matrix[j][k]=contador;
-                }*/
+                
             }
         }
-        while(check_if_missing(matrix_string,Rows,Columns)){
-            for (int j=0;j<Rows;j++){
-                for (int k=0;k<Columns;k++){
-                    if (matrix_string[j][k]!="0"){
-                        string palabra=matrix_string[j][k];
+        while(check_if_missing(missing_boxes)){
+            for (int j=missing_boxes.size()-1;j>=0;j--){
+                int k=missing_boxes[j].x;
+                int l=missing_boxes[j].y;
+                    if (matrix_string[k][l]!="0"){
+                        string palabra=matrix_string[k][l];
                         bool dependencia=false;
                         int contador=0,posicion=0,x,y;
                         string temporal;
@@ -134,26 +121,29 @@ int main(){
                             }
                         }
                         if(!dependencia){
-                            matrix[j][k]=contador;
-                            matrix_string[j][k]="0";
+                            matrix[k][l]=contador;
+                            matrix_string[k][l]="0";
+                            missing_boxes.erase(missing_boxes.begin()+j);
                         }
                         
                     }
-                }
+                
             }
         }
 
 
-        for(int j=0;j<Rows;j++){
-            for (int k=0;k<Columns;k++){
-                if (k!=Columns-1){
-                    cout<<matrix[j][k]<<" ";
+        for(int a=0;a<Rows;a++){
+            for (int b=0;b<Columns;b++){
+                if (b!=Columns-1){
+                    cout<<matrix[a][b]<<" ";
                 }else{
-                    cout<<matrix[j][k];
+                    cout<<matrix[a][b];
                 }
                 
             }cout<<endl;
         }
+        
+        
         
     }
 }
