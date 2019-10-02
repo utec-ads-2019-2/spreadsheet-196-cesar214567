@@ -4,16 +4,13 @@
 #include <cmath>
 using namespace std;
 
-vector<char> abecedario={'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'};
+vector<string> abecedario={"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
 
-class punto{
-    public:
-    int x,y;
-    punto(int x1,int y1):x(x1),y(y1){};
-};
-int get_letra(char letra){
+
+int get_letra(string letra){
     for (int i=0;i<abecedario.size();i++){
         if (abecedario[i]==letra){
+            //cout<<i<<endl;
             return i;
         }
     }
@@ -33,10 +30,14 @@ string get_palabra(string palabra,int &start, int end){
 
 int get_valor_de_palabra(string palabra,int end){
     int contador=0;
+    string temporal;
     for (int i=0;i<end;i++){
-        contador+=get_letra(palabra[0])*pow(26,end-1-i);
+        temporal=palabra[i];
+        contador+=((get_letra(temporal)+1)*pow(26,end-1-i));
+        //cout<<get_letra(temporal)<<endl;
     }
-    return contador;
+    //cout<<contador<<endl;
+    return contador-1;
 }
 
 bool get_primeracosa(char palabra){
@@ -61,19 +62,36 @@ int get_numero(string palabra,int &start, int end){
     return int_temporal-1;
 }
 
-bool check_if_missing(vector<punto> matrix){
-    if(matrix.empty()){
-        return false;
+int funcion(string **&matrix_string,int **&matrix,int x,int y){
+    if (matrix_string[x][y]=="0"){
+        return matrix[x][y];
     }
-    return true;
-}
+    string palabra=matrix_string[x][y];
+    int contador=0,posicion=0,x1,y1;
+    string temporal;
+    while(get_primeracosa(palabra[posicion])){
+        posicion+=1;
+        temporal=get_palabra(palabra,posicion,palabra.size());
+        //cout<<temporal<<endl;
+        y1=get_valor_de_palabra(temporal,temporal.size());
+        //cout<<"Y1 es "<<y1<<endl;
+        x1=get_numero(palabra,posicion,palabra.size());
+        contador+=funcion(matrix_string,matrix,x1,y1);
+    }
+    matrix[x][y]=contador;
+    matrix_string[x][y]="0";
+    return contador;
+}                
+
+
+
+
 
 
 int main(){
     int spreadsheets,Columns,Rows;
     cin>>spreadsheets;
     string palabra;
-    vector<punto> missing_boxes;
     for (int i=0;i<spreadsheets;i++){
         cin>>Columns>>Rows;
         int **matrix=new int*[Rows];
@@ -94,42 +112,21 @@ int main(){
                 }else{
                     matrix_string[j][k]=palabra;
                     matrix[j][k]=0;
-                    missing_boxes.push_back(punto(j,k));
                 }
                 
             }
         }
-        while(check_if_missing(missing_boxes)){
-            for (int j=missing_boxes.size()-1;j>=0;j--){
-                int k=missing_boxes[j].x;
-                int l=missing_boxes[j].y;
-                    if (matrix_string[k][l]!="0"){
-                        string palabra=matrix_string[k][l];
-                        bool dependencia=false;
-                        int contador=0,posicion=0,x,y;
-                        string temporal;
-                        while(get_primeracosa(palabra[posicion])){
-                            posicion+=1;
-                            temporal=get_palabra(palabra,posicion,palabra.size());
-                            y=get_valor_de_palabra(temporal,temporal.size());
-                            x=get_numero(palabra,posicion,palabra.size());
-                            if(matrix_string[x][y]=="0"){
-                                contador+=matrix[x][y];
-                            }else{
-                                dependencia=true;
-                                break;
-                            }
-                        }
-                        if(!dependencia){
-                            matrix[k][l]=contador;
-                            matrix_string[k][l]="0";
-                            missing_boxes.erase(missing_boxes.begin()+j);
-                        }
-                        
-                    }
+        for(int j=0;j<Rows;j++){
+            for (int k=0;k<Columns;k++){
+                if (matrix_string[j][k]!="0"){
+                    matrix[j][k]=funcion(matrix_string,matrix,j,k);
+                    
+                }
                 
+            
             }
         }
+        
 
 
         for(int a=0;a<Rows;a++){
